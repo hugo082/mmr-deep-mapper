@@ -1,0 +1,43 @@
+{
+    "name": "deep-mapper-v2",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "scripts": {
+        "test": "jest"
+    },
+    "dependencies": {
+        "@types/jest": "^24.0.23",
+        "jest": "^24.9.0",
+        "lodash": "^4.17.15",
+        "ts-jest": "^24.2.0",
+        "typescript": "^3.7.2"
+    },
+    "jest": {
+        "testEnvironment": "node",
+        "transform": {
+            ".*\\.ts": "ts-jest"
+        },
+        "testRegex": ".*\\.spec\\.ts",
+        "moduleFileExtensions": [
+            "ts",
+            "tsx",
+            "js",
+            "jsx",
+            "json",
+            "node"
+        ],
+        "testPathIgnorePatterns": [
+            "/node_modules/"
+        ],
+        "collectCoverage": true,
+        "coverageThreshold": {
+            "global": {
+                "branches": 100,
+                "functions": 100,
+                "lines": 20,
+                "statements": 20
+            }
+        }
+    }
+}
