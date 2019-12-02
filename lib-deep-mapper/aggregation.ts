@@ -87,16 +87,14 @@ export const createMapperAggregator = <
     TAccumulator extends object,
     TOperations extends { type: ZEUS_OPERATION } = TCampaign | TSet | TRoot
 >(
-    accumulator: TAccumulator,
     mapper: DecomposedMapper<TCampaign, TSet, TRoot, UCampaign, USet, URoot, TAccumulator>
 ) => ({
     apply: <UBCampaign, UBSet, UBRoot, TBAccumulator>(mapperB: DecomposedMapper<UCampaign, USet, URoot, UBCampaign, UBSet, UBRoot, TBAccumulator>) => {
         return createMapperAggregator(
-            accumulator,
             mergeMappers<TOperations, UCampaign, USet, URoot, TAccumulator, UBCampaign, UBSet, UBRoot, TBAccumulator>(mapper, mapperB)
         )
     },
     execute: (mediaPlan: EMediaPlan<TOperations>) => {
-        return deepMapV2(mediaPlan as MediaPlan<TOperations, TOperations>, accumulator, mapper)
+        return deepMapV2(mediaPlan as MediaPlan<TOperations, TOperations>, mapper.accumulator, mapper)
     }
 })

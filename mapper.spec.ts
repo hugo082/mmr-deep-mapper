@@ -9,7 +9,7 @@ describe("Mapper", () => {
   it("simple path types", () => {
     const mp = MEDIA_PLAN
 
-    const mapped = createMapperAggregator({ path: ""}, pathMapper)
+    const mapped = createMapperAggregator(pathMapper)
       .apply(levelMapper)
       .execute(mp)
     
