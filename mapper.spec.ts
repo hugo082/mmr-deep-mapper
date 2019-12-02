@@ -29,7 +29,7 @@ describe("Mapper", () => {
     }
 
     if (mapped.data.type === ZEUS_OPERATION.ROOT) {
-      expect(mapped.data.pathRoot).toBe("0_0")
+      expect(mapped.data.pathRoot).toBe("")
       expect(mapped.data.level).toBe("a")
     }
   })

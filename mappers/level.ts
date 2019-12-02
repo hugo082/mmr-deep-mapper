@@ -2,6 +2,7 @@ import { basicMapper } from "../lib-deep-mapper/mapper";
 import { CampaignOperation, SetOperation, RootOperation } from "../types/operation-zeus";
 
 export const levelMapper = basicMapper(
+  {},
   (campaign: CampaignOperation) => ({
     ...campaign,
     level: 1
@@ -14,4 +15,5 @@ export const levelMapper = basicMapper(
     ...root,
     level: "a"
   }),
+  (_child, _index, _accumulator) => ({})
 )

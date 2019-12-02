@@ -39,19 +39,19 @@ const deepMapV2 = <
       }
     },
     accumulator,
-    (child, index, accumulator) => accumulator
+    (child, index, accumulator) => mapper.accumulate(child as any, index, accumulator)
   ) as MediaPlan<URoot, USet | UCampaign>
 }
 
 const mergeMappers = <
     TOperations,
-    UACampaign, UASet, UARoot,
-    UBCampaign, UBSet, UBRoot,
-    TAccumulator,
+    UACampaign, UASet, UARoot, TAAccumulator,
+    UBCampaign, UBSet, UBRoot, TBAccumulator
 >(
-    mapperA: Mapper<TOperations, UACampaign, UASet, UARoot, TAccumulator>,
-    mapperB: DecomposedMapper<UACampaign, UASet, UARoot, UBCampaign, UBSet, UBRoot, TAccumulator>
-): Mapper<TOperations, UBCampaign & UACampaign, UBSet & UASet, UBRoot & UARoot, TAccumulator> => ({
+    mapperA: Mapper<TOperations, UACampaign, UASet, UARoot, TAAccumulator>,
+    mapperB: DecomposedMapper<UACampaign, UASet, UARoot, UBCampaign, UBSet, UBRoot, TBAccumulator>
+): Mapper<TOperations, UBCampaign & UACampaign, UBSet & UASet, UBRoot & UARoot, TAAccumulator & TBAccumulator> => ({
+    accumulator: { ...mapperA.accumulator, ...mapperB.accumulator },
     campaignMap: (campaign: ECampaign<TOperations>, accumulator) => {
         const mappedA = mapperA.campaignMap(campaign, accumulator)
         return {
@@ -73,6 +73,10 @@ const mergeMappers = <
             ...mapperB.rootMap(mappedA, children as any, accumulator)
         }
     },
+    accumulate: (child, index, accumulator) => ({
+        ...mapperA.accumulate(child, index, accumulator),
+        ...mapperB.accumulate(child as any, index, accumulator)
+    })
 })
 
 export const createMapperAggregator = <
@@ -86,10 +90,10 @@ export const createMapperAggregator = <
     accumulator: TAccumulator,
     mapper: DecomposedMapper<TCampaign, TSet, TRoot, UCampaign, USet, URoot, TAccumulator>
 ) => ({
-    apply: <UBCampaign, UBSet, UBRoot>(mapperB: DecomposedMapper<UCampaign, USet, URoot, UBCampaign, UBSet, UBRoot, TAccumulator>) => {
+    apply: <UBCampaign, UBSet, UBRoot, TBAccumulator>(mapperB: DecomposedMapper<UCampaign, USet, URoot, UBCampaign, UBSet, UBRoot, TBAccumulator>) => {
         return createMapperAggregator(
             accumulator,
-            mergeMappers<TOperations, UCampaign, USet, URoot, UBCampaign, UBSet, UBRoot, TAccumulator>(mapper, mapperB)
+            mergeMappers<TOperations, UCampaign, USet, URoot, TAccumulator, UBCampaign, UBSet, UBRoot, TBAccumulator>(mapper, mapperB)
         )
     },
     execute: (mediaPlan: EMediaPlan<TOperations>) => {

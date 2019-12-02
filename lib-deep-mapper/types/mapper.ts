@@ -18,9 +18,11 @@ export interface DecomposedMapper<
   URoot,
   TAccumulator
 > {
+  accumulator: TAccumulator,
   campaignMap: LeafMapper<TCampaign, TAccumulator, UCampaign>,
   setMap: NodeMapper<TSet, MediaPlan<TSet | TCampaign, TSet | TCampaign>, TAccumulator, USet>,
-  rootMap: NodeMapper<TRoot, MediaPlan<TSet | TCampaign, TSet | TCampaign>, TAccumulator, URoot>
+  rootMap: NodeMapper<TRoot, MediaPlan<TSet | TCampaign, TSet | TCampaign>, TAccumulator, URoot>,
+  accumulate: (child: MediaPlan<TSet | TCampaign, TSet | TCampaign>, index: number, accumulator: TAccumulator) => TAccumulator
 }
 
 export interface LeafMapper<TData, TAccumulator, U> {

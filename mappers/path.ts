@@ -1,12 +1,10 @@
 import { basicMapper } from "../lib-deep-mapper/mapper";
 import { CampaignOperation, SetOperation, RootOperation } from "../types/operation-zeus";
-
-interface Accumulator {
-  path: string
-}
+import { appendToPath } from "../utils-path";
 
 export const pathMapper = basicMapper(
-  (campaign: CampaignOperation, accumulator: Accumulator) => ({
+  { path: "" },
+  (campaign: CampaignOperation, accumulator) => ({
     ...campaign,
     path: accumulator.path
   }),
@@ -18,4 +16,7 @@ export const pathMapper = basicMapper(
     ...root,
     pathRoot: accumulator.path
   }),
+  (_child, index, accumulator) => ({
+    path: appendToPath(accumulator.path, index)
+  })
 )
