@@ -1,18 +1,21 @@
 import { basicMapper } from "../lib-deep-mapper/mapper";
-import { CampaignOperation, SetOperation, RootOperation, ZeusOperation } from "../types/operation-zeus";
-import { ECampaign } from "../lib-deep-mapper/types/operations";
+import { CampaignOperation, SetOperation, RootOperation } from "../types/operation-zeus";
 
-export const pathMapper = basicMapper<ZeusOperation, { path: string }>(
-  (campaign, accumulator) => ({
+interface Accumulator {
+  path: string
+}
+
+export const pathMapper = basicMapper(
+  (campaign: CampaignOperation, accumulator: Accumulator) => ({
     ...campaign,
     path: accumulator.path
   }),
-  (set: SetOperation, _children: never[], accumulator) => ({
+  (set: SetOperation, _children, accumulator) => ({
     ...set,
-    path: accumulator.path
+    pathSet: accumulator.path
   }),
   (root: RootOperation, _children, accumulator) => ({
     ...root,
-    path: accumulator.path
+    pathRoot: accumulator.path
   }),
 )

@@ -1,18 +1,20 @@
-import { Mapper } from "./types/mapper";
+import { Mapper, DecomposedMapper, LeafMapper, NodeMapper } from "./types/mapper";
 import { MediaPlan } from "../types/media-plan";
-import { CampaignOperation, ZEUS_OPERATION } from "../types/operation-zeus";
+import { ZEUS_OPERATION } from "../types/operation-zeus";
 import { ECampaign, ERoot, ESet, EMediaPlan, EChildren } from "./types/operations";
 import { deepVisitor } from "./visitor";
 import { appendToPath } from "../utils-path";
 
 export const basicMapper = <
-  TOperations,
+  TCampaign, TSet, TRoot,
   TAccumulator,
+  UCampaign, USet, URoot,
 >(
-  campaignMap: <UCampaign extends ECampaign<TOperations>>(campaign: ECampaign<TOperations>, accumulator: TAccumulator) => UCampaign,
-  setMap: <USet extends ESet<TOperations>>(set: ESet<TOperations>, children:  Array<EChildren<TOperations>>, accumulator: TAccumulator) => USet,
-  rootMap: <URoot extends ERoot<TOperations>>(root: ERoot<TOperations>, children:  Array<EChildren<TOperations>>, accumulator: TAccumulator) => URoot
-): Mapper<TOperations, ReturnType<typeof campaignMap>, ReturnType<typeof setMap>, ReturnType<typeof rootMap>, TAccumulator> => ({
+  campaignMap: LeafMapper<TCampaign, TAccumulator, UCampaign>,
+  setMap: NodeMapper<TSet, MediaPlan<TSet | TCampaign, TSet | TCampaign>, TAccumulator, USet>,
+  rootMap: NodeMapper<TRoot, MediaPlan<TSet | TCampaign, TSet | TCampaign>, TAccumulator, URoot>
+// ): Mapper<TOperations, UCampaign, USet, URoot, TAccumulator> => ({
+): DecomposedMapper<TCampaign, TSet, TRoot, UCampaign, USet, URoot, TAccumulator> => ({
   campaignMap,
   setMap,
   rootMap
@@ -29,9 +31,9 @@ export default function deepMap <
   ASet extends ESet<TOperations>,
   ARoot extends ERoot<TOperations>,
 >(
-  mediaPlan: EMediaPlan<TOperations>,
+  mediaPlan: MediaPlan<TOperations, TOperations>,
   mapperA: Mapper<TOperations, ACampaign, ASet, ARoot, typeof deepMapAccumulator>
-): MediaPlan<ERoot<TOperations>, ESet<TOperations> | ACampaign>
+): MediaPlan<ARoot, ASet | ACampaign>
 
 export default function deepMap <
   TOperations extends { type: ZEUS_OPERATION },
@@ -39,11 +41,11 @@ export default function deepMap <
   USet extends ESet<TOperations>,
   URoot extends ERoot<TOperations>,
 >(
-  mediaPlan: EMediaPlan<TOperations>,
+  mediaPlan: MediaPlan<TOperations, TOperations>,
   ...mappers: Mapper<TOperations, UCampaign, USet, URoot, typeof deepMapAccumulator>[]
 ) {
   return deepVisitor(
-    mediaPlan as MediaPlan<TOperations, TOperations>,
+    mediaPlan,
     (visited, children: EChildren<TOperations>[], mediaPlanAccumulator) => {
       if (visited.data.type === ZEUS_OPERATION.CAMPAIGN) {
           return {

@@ -12,8 +12,9 @@ import deepMap from "./lib-deep-mapper/mapper";
 describe("Mapper", () => {
 
   it("simple path types", () => {
+    const mp = MEDIA_PLAN as MediaPlan<ZeusOperation, ZeusOperation>
     const mapped = deepMap(
-      MEDIA_PLAN as MediaPlan<ZeusOperation, ZeusOperation>,
+      mp,
       pathMapper
     )
     
@@ -24,6 +25,14 @@ describe("Mapper", () => {
     expect(child.data.type === ZEUS_OPERATION.CAMPAIGN).toBe(true)
     if (child.data.type === ZEUS_OPERATION.CAMPAIGN) {
       expect(child.data.path).toBe("0_0")
+    }
+
+    if (child.data.type === ZEUS_OPERATION.SET) {
+      expect(child.data.pathSet).toBe("0_0")
+    }
+
+    if (mapped.data.type === ZEUS_OPERATION.ROOT) {
+      expect(mapped.data.pathRoot).toBe("0_0")
     }
   })
 
