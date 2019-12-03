@@ -46,12 +46,30 @@ export interface BiDecomposedMapper<
 > {
   accumulator: TAccumulator,
 
-  downCampaignMap: MapperFunction<TCampaign, DownContextWithParent<TAccumulator, UDownSet | UDownRoot, never>, UDownCampaign>,
-  upCampaignMap: MapperFunction<UDownCampaign, DownContext<TAccumulator>, UUpCampaign>,
+  downCampaignMap: MapperFunction<TCampaign, DownContextWithParent<TAccumulator, (TSet & UDownSet) | (TRoot & UDownRoot), never>, UDownCampaign>,
+  upCampaignMap: MapperFunction<TCampaign & UDownCampaign, DownContext<TAccumulator>, UUpCampaign>,
 
-  downSetMap: MapperFunction<TSet, DownContextWithParent<TAccumulator, UDownRoot | UDownSet>, UDownSet>,
-  upSetMap: MapperFunction<UDownSet, UpContext<TAccumulator, UUpSet | UUpCampaign>, UUpSet>,
+  downSetMap: MapperFunction<TSet, DownContextWithParent<TAccumulator, (TRoot & UDownRoot) | (TSet & UDownSet)>, UDownSet>,
+  upSetMap: MapperFunction<TSet & UDownSet, UpContext<TAccumulator, (TSet & UUpSet) | (TCampaign & UUpCampaign)>, UUpSet>,
 
   downRootMap: MapperFunction<TRoot, DownContext<TAccumulator>, UDownRoot>,
-  upRootMap: MapperFunction<UDownRoot, UpContext<TAccumulator, UUpSet | UUpCampaign>, UUpRoot>,
+  upRootMap: MapperFunction<TRoot & UDownRoot, UpContext<TAccumulator, (TSet & UUpSet) | (TCampaign & UUpCampaign)>, UUpRoot>,
+}
+
+export interface BiDecomposedMapper<
+  TCampaign, TSet, TRoot,
+  UDownCampaign, UDownSet, UDownRoot,
+  UUpCampaign, UUpSet, UUpRoot,
+  TAccumulator
+> {
+  accumulator: TAccumulator,
+
+  downCampaignMap: MapperFunction<TCampaign, DownContextWithParent<TAccumulator, (TSet & UDownSet) | (TRoot & UDownRoot), never>, UDownCampaign>,
+  upCampaignMap: MapperFunction<TCampaign & UDownCampaign, DownContext<TAccumulator>, UUpCampaign>,
+
+  downSetMap: MapperFunction<TSet, DownContextWithParent<TAccumulator, (TRoot & UDownRoot) | (TSet & UDownSet)>, UDownSet>,
+  upSetMap: MapperFunction<TSet & UDownSet, UpContext<TAccumulator, (TSet & UUpSet) | (TCampaign & UUpCampaign)>, UUpSet>,
+
+  downRootMap: MapperFunction<TRoot, DownContext<TAccumulator>, UDownRoot>,
+  upRootMap: MapperFunction<TRoot & UDownRoot, UpContext<TAccumulator, (TSet & UUpSet) | (TCampaign & UUpCampaign)>, UUpRoot>,
 }

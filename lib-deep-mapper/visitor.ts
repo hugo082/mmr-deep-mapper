@@ -25,9 +25,9 @@ export const deepVisitor = <TData, TReturn, TAccumulator extends object = object
 //   return upMap(mediaPlan, children)
 // }
 
-export const deepVisitorV3 = <TData, TDownOperation extends TData, TUpOperation>(
+export const deepVisitorV3 = <TData, TDownOperation extends TData, TUpOperation extends TDownOperation>(
   mediaPlan: MediaPlan<TData, TData>,
-  downMap: (current: MediaPlan<TData, TData>, parent?: MediaPlan<TData, TData>, index?: number) => MediaPlan<TDownOperation, TData>,
+  downMap: (current: MediaPlan<TData, TData>, parent?: MediaPlan<TDownOperation, TData>, index?: number) => MediaPlan<TDownOperation, TData>,
   upMap: (mediaPlan: MediaPlan<TDownOperation, TData>, children: MediaPlan<TUpOperation, TUpOperation>[]) => MediaPlan<TUpOperation, TUpOperation>,
   parent?: MediaPlan<TDownOperation, TData>,
   index?: number

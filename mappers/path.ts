@@ -5,13 +5,14 @@ import { mapper } from "../lib-deep-mapper/builder";
 export const pathMapper = mapper
   .buildDownMapper({})
   .rootMap((root: RootOperation) => ({
-    ...root,
     pathRoot: ""
   }))
   .setMap((set: SetOperation, context) => {
+    const parentPath = context.parent.data.type === ZEUS_OPERATION.ROOT
+      ? context.parent.data.pathRoot
+      : (context.parent.data as any).pathSet
     const a = {
-      ...set,
-      pathSet: appendToPath(context.parent.data.pathRoot, context.index)
+      pathSet: appendToPath(parentPath, context.index)
     }
     return a
   })
@@ -20,7 +21,6 @@ export const pathMapper = mapper
       ? context.parent.data.pathRoot
       : context.parent.data.pathSet
     return {
-      ...campaign,
       path: appendToPath(parentPath, context.index)
     }
   }
