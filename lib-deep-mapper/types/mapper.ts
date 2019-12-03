@@ -1,37 +1,5 @@
-import { ECampaign, ESet, ERoot, EChildren } from "./operations";
+import { ECampaign, ESet, ERoot } from "./operations";
 import { MediaPlan } from "../../types/media-plan";
-
-export type Mapper<
-  TOperations,
-  UCampaign,
-  USet,
-  URoot,
-  TAccumulator
-> = DecomposedMapper<ECampaign<TOperations>, ESet<TOperations>, ERoot<TOperations>, UCampaign, USet, URoot, TAccumulator>
-
-export interface DecomposedMapper<
-  TCampaign,
-  TSet,
-  TRoot,
-  UCampaign,
-  USet,
-  URoot,
-  TAccumulator
-> {
-  accumulator: TAccumulator,
-  campaignMap: LeafMapper<TCampaign, TAccumulator, UCampaign>,
-  setMap: NodeMapper<TSet, MediaPlan<TSet | TCampaign, TSet | TCampaign>, TAccumulator, USet>,
-  rootMap: NodeMapper<TRoot, MediaPlan<TSet | TCampaign, TSet | TCampaign>, TAccumulator, URoot>
-}
-
-export interface LeafMapper<TData, TAccumulator, U> {
-  (campaign: TData, accumulator: TAccumulator): U
-}
-
-export interface NodeMapper<TData, TChild, TAccumulator, U> {
-  (campaign: TData, children: TChild[], accumulator: TAccumulator): U
-}
-
 
 export interface MapperFunction<TData, TContext, U> {
   (current: TData, context: TContext): U
@@ -58,9 +26,9 @@ export interface DownContext<TAccumulator> {
   accumulator: TAccumulator
 }
 
-export interface UpContext<TAccumulator, USet, UCampaign> extends DownContext<TAccumulator> {
+export interface UpContext<TAccumulator, TData, TChild = TData> extends DownContext<TAccumulator> {
   accumulator: TAccumulator
-  children: MediaPlan<USet | UCampaign, USet | UCampaign>[]
+  children: MediaPlan<TData, TChild>[]
 }
 
 export interface DownContextWithParent<TAccumulator, TData, TChild = TData> extends DownContext<TAccumulator> {
@@ -78,12 +46,12 @@ export interface BiDecomposedMapper<
 > {
   accumulator: TAccumulator,
 
-  downCampaignMap: MapperFunction<TCampaign, DownContextWithParent<TAccumulator, TSet, TCampaign>, UDownCampaign>,
+  downCampaignMap: MapperFunction<TCampaign, DownContextWithParent<TAccumulator, UDownSet | UDownRoot, never>, UDownCampaign>,
   upCampaignMap: MapperFunction<UDownCampaign, DownContext<TAccumulator>, UUpCampaign>,
 
-  downSetMap: MapperFunction<TSet, DownContextWithParent<TAccumulator, TSet | TCampaign>, UDownSet>,
-  upSetMap: MapperFunction<UDownSet, UpContext<TAccumulator, UUpSet, UUpCampaign>, UUpSet>,
+  downSetMap: MapperFunction<TSet, DownContextWithParent<TAccumulator, UDownRoot | UDownSet>, UDownSet>,
+  upSetMap: MapperFunction<UDownSet, UpContext<TAccumulator, UUpSet | UUpCampaign>, UUpSet>,
 
   downRootMap: MapperFunction<TRoot, DownContext<TAccumulator>, UDownRoot>,
-  upRootMap: MapperFunction<UDownRoot, UpContext<TAccumulator, UUpSet, UUpCampaign>, UUpRoot>,
+  upRootMap: MapperFunction<UDownRoot, UpContext<TAccumulator, UUpSet | UUpCampaign>, UUpRoot>,
 }

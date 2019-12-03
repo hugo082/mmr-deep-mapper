@@ -1,18 +1,17 @@
-import { basicUpMapper } from "../lib-deep-mapper/mapper";
 import { CampaignOperation, SetOperation, RootOperation } from "../types/operation-zeus";
+import { mapper } from "../lib-deep-mapper/builder";
 
-export const levelMapper = basicUpMapper(
-  {},
-  (campaign: CampaignOperation) => ({
+export const levelMapper = mapper
+  .buildUpMapper({})
+  .campaignMap((campaign: CampaignOperation) => ({
     ...campaign,
     level: 1
-  }),
-  (set: SetOperation) => ({
+  }))
+  .setMap((set: SetOperation) => ({
     ...set,
     level: undefined
-  }),
-  (root: RootOperation) => ({
+  }))
+  .rootMap((root: RootOperation) => ({
     ...root,
     level: "a"
-  }),
-)
+  }))
