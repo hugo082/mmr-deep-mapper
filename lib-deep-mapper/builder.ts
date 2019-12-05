@@ -1,20 +1,52 @@
-import { BiDecomposedMapper, MapperFunction, DownContext, UpContext, DownContextWithParent } from "./types/mapper";
+import {
+  BiDecomposedMapper,
+  MapperFunction,
+  DownContext,
+  UpContext,
+  DownContextWithParent,
+  RootDownMapperFunction,
+  SetDownMapperFunction,
+  CampaignDownMapperFunction
+} from "./types/mapper";
+import { ERoot, ECampaign, ESet } from "./types/operations";
 
-export const mapper = ({
-  buildDownMapper: <TAccumulator>(accumulator: TAccumulator) => ({
-    rootMap: <TRoot, URoot>(rootMapFunction: MapperFunction<TRoot, DownContext<TAccumulator>, URoot>) => ({
-      setMap: <TSet, USet>(setMapFunction: MapperFunction<TSet, DownContextWithParent<TAccumulator, (TRoot & URoot) | TSet>, USet>) => ({
+const downBuilder = <
+  TRoot, TSet, TCampaign,
+  URoot, USet, UCampaign,
+  TAccumulator
+>(
+  accumulator: TAccumulator,
+  rootMapFunction: RootDownMapperFunction<TRoot, URoot, TAccumulator>,
+  setMapFunction: SetDownMapperFunction<TRoot, TSet, URoot, USet, TAccumulator>,
+  campaignMapFunction: CampaignDownMapperFunction<TRoot, TSet, TCampaign, URoot, USet, UCampaign, TAccumulator>
+): BiDecomposedMapper<ECampaign<TCampaign>, ESet<TSet>, ERoot<TRoot>, UCampaign, USet, URoot, {}, {}, {}, TAccumulator> => ({
+  accumulator,
+  downCampaignMap: campaignMapFunction,
+  upCampaignMap: () => ({}),
+  downSetMap: setMapFunction,
+  upSetMap: () => ({}),
+  downRootMap: rootMapFunction,
+  upRootMap: () => ({})
+})
+
+export const mapperBuilder = ({
+  downMapper: <TAccumulator>(accumulator: TAccumulator) => ({
+    map: <T, U>(
+      mapFunction: MapperFunction<T, DownContext<TAccumulator>, U>
+    ) => downBuilder(accumulator, mapFunction, mapFunction, mapFunction),
+    rootAndSet: <T, U>(mapFunction: MapperFunction<T, DownContext<TAccumulator>, U>) => ({
+      campaignMap: <TCampaign, UCampaign extends object>(
+        campaignMapFunction: MapperFunction<TCampaign, DownContextWithParent<TAccumulator, T & U, never>, UCampaign>
+      ) => downBuilder(accumulator, mapFunction, mapFunction, campaignMapFunction)
+    }),
+    rootMap: <TRoot, URoot>(rootMapFunction: RootDownMapperFunction<TRoot, URoot, TAccumulator>) => ({
+      setAndCampaign: <T, U>(
+        mapFunction: MapperFunction<T, DownContextWithParent<TAccumulator, (TRoot & URoot) | (T & U)>, U>
+      ) => downBuilder(accumulator, rootMapFunction, mapFunction, mapFunction),
+      setMap: <TSet, USet>(setMapFunction: SetDownMapperFunction<TRoot, TSet, URoot, USet, TAccumulator>) => ({
         campaignMap: <TCampaign, UCampaign extends object>(
-          campaignMapFunction: MapperFunction<TCampaign, DownContextWithParent<TAccumulator, (TSet & USet) | (TRoot & URoot), never>, UCampaign>
-        ): BiDecomposedMapper<TCampaign, TSet, TRoot, UCampaign, USet, URoot, {}, {}, {}, TAccumulator> => ({
-          accumulator,
-          downCampaignMap: campaignMapFunction,
-          upCampaignMap: () => ({}),
-          downSetMap: setMapFunction,
-          upSetMap: () => ({}),
-          downRootMap: rootMapFunction,
-          upRootMap: () => ({})
-        })
+          campaignMapFunction: CampaignDownMapperFunction<TRoot, TSet, TCampaign, URoot, USet, UCampaign, TAccumulator>
+        ) => downBuilder(accumulator, rootMapFunction, setMapFunction, campaignMapFunction)
       })
     })
   }),
