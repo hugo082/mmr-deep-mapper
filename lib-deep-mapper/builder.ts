@@ -4,16 +4,16 @@ export const mapper = ({
   buildDownMapper: <TAccumulator>(accumulator: TAccumulator) => ({
     rootMap: <TRoot, URoot>(rootMapFunction: MapperFunction<TRoot, DownContext<TAccumulator>, URoot>) => ({
       setMap: <TSet, USet>(setMapFunction: MapperFunction<TSet, DownContextWithParent<TAccumulator, (TRoot & URoot) | TSet>, USet>) => ({
-        campaignMap: <TCampaign, UCampaign>(
+        campaignMap: <TCampaign, UCampaign extends object>(
           campaignMapFunction: MapperFunction<TCampaign, DownContextWithParent<TAccumulator, (TSet & USet) | (TRoot & URoot), never>, UCampaign>
-        ): BiDecomposedMapper<TCampaign, TSet, TRoot, UCampaign, USet, URoot, UCampaign, USet, URoot, TAccumulator> => ({
+        ): BiDecomposedMapper<TCampaign, TSet, TRoot, UCampaign, USet, URoot, {}, {}, {}, TAccumulator> => ({
           accumulator,
           downCampaignMap: campaignMapFunction,
-          upCampaignMap: (current) => current,
+          upCampaignMap: () => ({}),
           downSetMap: setMapFunction,
-          upSetMap: (current) => current,
+          upSetMap: () => ({}),
           downRootMap: rootMapFunction,
-          upRootMap: (current) => current
+          upRootMap: () => ({})
         })
       })
     })

@@ -3,11 +3,17 @@ import { MEDIA_PLAN } from "./db"
 import { pathMapper } from "./mappers/path";
 import { levelMapper } from "./mappers/level";
 import { createMapperAggregator } from "./lib-deep-mapper/aggregation";
+import { convertBiMapperToDownContextualMapper, convertBiMapperToUpContextualMapper } from "./lib-deep-mapper/mapper";
 
 describe("Mapper", () => {
 
   it("simple path types", () => {
     const mp = MEDIA_PLAN
+
+
+    const mapper = createMapperAggregator(pathMapper)
+      .apply(levelMapper)
+      .get()
 
     const mapped = createMapperAggregator(pathMapper)
       .apply(levelMapper)

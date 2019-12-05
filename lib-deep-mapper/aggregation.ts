@@ -70,12 +70,12 @@ const deepMapV2 = <
                 children: children
             }
         },
-    ) as MediaPlan<URoot, USet | UCampaign>
+    ) as MediaPlan<(TRoot & UDownRoot & URoot), (TCampaign & UDownCampaign & UCampaign) | (TSet & UDownSet & USet)>
 }
 
-const mergeMapperFunctions = <TAData extends TBData, TBData, UA, UB>(
+const mergeMapperFunctions = <TAData, UA, UB>(
     functionA: MapperFunction<TAData, unknown, UA>,
-    functionB: MapperFunction<TBData, unknown, UB>
+    functionB: MapperFunction<TAData, unknown, UB>
 ) => (campaign: TAData, context: any) => {
     const mappedA = functionA(campaign, context)
     return {
@@ -89,14 +89,14 @@ const mergeMapperFunctions = <TAData extends TBData, TBData, UA, UB>(
 
 const mergeMappers = <
     TBCampaign extends { type: ZEUS_OPERATION.CAMPAIGN }, TBSet extends { type: ZEUS_OPERATION.SET }, TBRoot extends { type: ZEUS_OPERATION.ROOT },
-    TACampaign extends TBCampaign, TASet extends TBSet, TARoot extends TBRoot,
+    TACampaign extends { type: ZEUS_OPERATION.CAMPAIGN }, TASet extends { type: ZEUS_OPERATION.SET }, TARoot extends { type: ZEUS_OPERATION.ROOT },
     UADownCampaign, UADownSet, UADownRoot,
     UAUpCampaign, UAUpSet, UAUpRoot, TAAccumulator,
     UBDownCampaign, UBDownSet, UBDownRoot,
     UBUpCampaign, UBUpSet, UBUpRoot, TBAccumulator,
 >(
     mapperA: BiDecomposedMapper<TACampaign, TASet, TARoot, UADownCampaign, UADownSet, UADownRoot, UAUpCampaign, UAUpSet, UAUpRoot, TAAccumulator>,
-    mapperB: BiDecomposedMapper<TBCampaign, TBSet, TBRoot, UBDownCampaign, UBDownSet, UBDownRoot, UBUpCampaign, UBUpSet, UBUpRoot, TBAccumulator>
+    mapperB: BiDecomposedMapper<TACampaign & UADownCampaign, TASet & UADownSet, TARoot & UADownRoot, UBDownCampaign, UBDownSet, UBDownRoot, UBUpCampaign, UBUpSet, UBUpRoot, TBAccumulator>
 ): BiDecomposedMapper<TACampaign, TASet, TARoot, UADownCampaign & UBDownCampaign, UADownSet & UBDownSet, UADownRoot & UBDownRoot, UAUpCampaign & UBUpCampaign, UAUpSet & UBUpSet, UAUpRoot & UBUpRoot, TAAccumulator & TBAccumulator> => ({
     accumulator: { ...mapperA.accumulator, ...mapperB.accumulator },
     downCampaignMap: mergeMapperFunctions(mapperA.downCampaignMap, mapperB.downCampaignMap),
@@ -107,6 +107,9 @@ const mergeMappers = <
     upRootMap: mergeMapperFunctions(mapperA.upRootMap, mapperB.upRootMap),
 })
 
+
+type Sub<T> = Partial<T> & { type: ZEUS_OPERATION.CAMPAIGN }
+
 export const createMapperAggregator = <
     TCampaign extends { type: ZEUS_OPERATION.CAMPAIGN }, TSet extends { type: ZEUS_OPERATION.SET }, TRoot extends { type: ZEUS_OPERATION.ROOT },
     UDownCampaign, UDownSet, UDownRoot,
@@ -115,11 +118,12 @@ export const createMapperAggregator = <
 >(
     mapper: BiDecomposedMapper<TCampaign, TSet, TRoot, UDownCampaign, UDownSet, UDownRoot, UUpCampaign, UUpSet, UUpRoot, TAccumulator>
 ) => ({
-    apply: <TBCampaign, UBDownCampaign, UBDownSet, UBDownRoot, UBUpCampaign, UBUpSet, UBUpRoot, TBAccumulator>(mapperB: BiDecomposedMapper<TBCampaign, TSet, TRoot, UBDownCampaign, UBDownSet, UBDownRoot, UBUpCampaign, UBUpSet, UBUpRoot, TBAccumulator>) => {
+    apply: <UBDownCampaign, UBDownSet, UBDownRoot, UBUpCampaign, UBUpSet, UBUpRoot, TBAccumulator>(mapperB: BiDecomposedMapper<Sub<TCampaign>, TSet, TRoot, UBDownCampaign, UBDownSet, UBDownRoot, UBUpCampaign, UBUpSet, UBUpRoot, TBAccumulator>) => {
         return createMapperAggregator(
             mergeMappers(mapper, mapperB) // Checker que le type d'entré de B est un sour type de la sortie de A
         )
     },
+    get: () => mapper,
     execute: (mediaPlan: MediaPlan<TCampaign | TSet | TRoot, TCampaign | TSet | TRoot>) => {
         return deepMapV2(mediaPlan, mapper)
     }
